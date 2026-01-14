@@ -34,7 +34,7 @@ const Header: React.FC = () => {
               <div className="mr-3 flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 shadow-inner group-hover:bg-white/20 transition-all">
                 <FontAwesomeIcon icon={faMountain} className="text-blue-400 group-hover:scale-110 transition-transform" />
               </div>
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 Blog App
               </span>
             </Link>
@@ -56,7 +56,7 @@ const Header: React.FC = () => {
                   className="relative py-1 transition-all hover:text-blue-400 group"
                 >
                   Login
-                  <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-blue-400 transition-all group-hover:w-full"></span>
+                  <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
               )
             )}
@@ -66,7 +66,7 @@ const Header: React.FC = () => {
               className="relative py-1 transition-all hover:text-blue-400 group"
             >
               About
-              <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-blue-400 transition-all group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-blue-400 transition-all group-hover:w-full"></span>
             </Link>
 
             {session && (

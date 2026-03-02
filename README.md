@@ -1,69 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blog App
 
-## Getting Started
+## 概要
+  閲覧者との活発なコミュニケーションを楽しみたい発信者に向けて開発したブログアプリです。<br>
+  通常の投稿全体に対するコメントだけでなく、記事内の「特定の文」に対してピンポイントでコメントを残せる機能を備えています。<br>
+  管理者（記事作成者）のコメントを視覚的に強調することで、読者の疑問に対する補足や回答が埋もれない設計にしています。
 
-First, run the development server:
+- **開発の背景・経緯**
+    - 従来のブログで、記事のどの部分に対する感想や質問なのかが伝わりにくいと思うことがありました。
+    - 文単位でコメントができることで、読者が「この部分に補足がほしい」「この一文に共感した」といった具体的なフィードバックを伝えやすくなると考え、この機能を実装しました。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **公開URL**
+    - https://nate-next-blog-app.vercel.app/
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **管理者アカウント**
+    - email : admin2@example.com
+    - Password : password
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 特徴と機能の説明
+- **投稿記事**
+<p align="center">
+  <img src="./public/images/ichiran.png"  alt="投稿一覧">
+</p>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    投稿記事一覧ページで閲覧したい記事をクリックすることで記事の閲覧が可能です
 
-## Learn More
+<p align="center">
+  <img src="./public/images/comment.png"  alt="コメント">
+</p>
 
-To learn more about Next.js, take a look at the following resources:
+    記事の詳細ページではインラインコメントと一般的なコメントができます。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    一般的なコメントは入力欄にテキストを入力し、送信ボタンを押すことでコメントすることができます。 
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **インラインコメント機能**
+<p align="center">
+  <img src="./public/images/inline1.png"  alt="インラインコメント1">
+</p>
 
-## コメント機能について
+    特定の文にコメントまたは補足をしたい場合に使用することを想定しています。
 
-このアプリでは投稿の任意位置に吹き出し形式でコメントを付けられる機能を実装しています。
+    画面右下のコメント位置選択ボタンをクリックすることで位置選択モードになります。もう一度クリックすることでモードを解除できます。
 
-### 必須のデータ構造
-Supabase上に以下のようなテーブルが必要です（管理コンソールのSQLエディタやマイグレーションで作成）：
+    位置選択モードでコメントしたい文をクリックすることでウィンドウが表示され、テキストを入力しokを押すことでコメントできます。
 
-```sql
-create table "Comment" (
-  id uuid primary key default gen_random_uuid(),
-  "postId" text not null references "Post"(id) on delete cascade,
-  position integer not null,
-  text text not null,
-  "createdAt" timestamp with time zone default now()
-);
-```
+    コメントした文に吹き出しアイコンが表示されます
 
-カラム名はコード中で使われている通りキャメルケースになっています。
-テーブル名は大文字 `Comment` としています。
+<p align="center">
+  <img src="./public/images/inline2.png"  alt="インラインコメント2">
+</p>
 
-新しいコメントはUI上の `+` アイコンから追加でき、吹き出しアイコンをクリックすると内容を表示します。
-表示/非表示はページ右上のボタンで切り替えられます。
+    位置選択モードでないときに吹き出しアイコンをクリックすることでコメントを表示することができます。
 
-Prisma を使ってローカルの SQLite (dev.db) を管理している場合は、`schema.prisma` に `Comment` モデルを追加済みです。変更後は以下を実行してください：
+    文章を改行ごとに分解し、文単位で「+」のコメントアンカーを配置しています。一つの文に対して複数のコメントを紐づけることが可能です。
 
-```bash
-npx prisma db push
-npx prisma generate
-npx prisma db seed
-```
+    コメント位置選択ボタンの下の非表示、表示ボタンで、インラインコメントの表示を切り替えることができます。
 
-これで開発環境でも同じデータ構造が利用可能になります。
+- **管理者コメントの識別表示**
+<p align="center">
+  <img src="./public/images/inline3.png"  alt="インラインコメント3">
+</p>
 
-## Deploy on Vercel
+    管理者IDを用いて、管理者による返信や補足を一般閲覧者のコメントと明確に区別して表示します。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **ログイン機能**
+<p align="center">
+  <img src="./public/images/login.png"  alt="ログイン">
+</p>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    画面右上のログインをクリックすることでログイン画面に移動します。
+
+    ログインは管理者のemail、Passwordを入力することで行うことができます。
+
+    ログイン後はヘッダーに管理者アカウントアイコンが表示され、「login」が「logout」に変わります。
+    ログイン後には管理用ページに移動します。
+
+    管理用ページのリンクをクリックすることでそれぞれの管理ページに移動します。
+
+- **投稿記事一覧(管理用)**
+<p align="center">
+  <img src="./public/images/admin1.png"  alt="投稿一覧(管理)">
+</p>
+
+    投稿記事が確認でき、各投稿の編集ボタンをクリックすることで記事の編集を行うことができます。
+
+    投稿記事の並び替えを行うことができ、投稿日時が古い順、新しい順で並び替えができます。
+
+    右上の新規作成ボタンをクリックすることで記事の新規作成ができます。
+
+- **記事の新規作成**
+<p align="center">
+  <img src="./public/images/admin2.png"  alt="記事の新規作成">
+</p>
+
+    記事の新規作成を行うことができ、タイトル、本文、カバー画像、カテゴリを入力し投稿ボタンをクリックすることで入力した内容を投稿します。
+
+    カバー画像は選択ボタンをクリックし、選択します。画像を選択しないと記事の投稿はできません。
+
+    カテゴリはチェックボックスをクリックすることで選択でき、複数のカテゴリを選択できます。
+
+- **記事の編集**
+<p align="center">
+  <img src="./public/images/admin3.png"  alt="投稿一覧">
+</p>
+
+    投稿されている記事の編集、削除を行うことができ、タイトル、本文、カバー画像、カテゴリを編集、コメントは削除できます。
+
+    保存をクリックすると変更が保存され、削除をクリックすると警告ウィンドウが出現し、okを押すと記事が削除されます。
+
+    キャンセルをクリックすると変更を破棄し、編集前のままになります。
+
+- **カテゴリ一覧**
+<p align="center">
+  <img src="./public/images/admin4.png"  alt="カテゴリ一覧">
+</p>
+
+    投稿記事一覧(管理用)と同様にカテゴリが確認でき、各カテゴリの編集ボタンをクリックすることでカテゴリの編集を行うことができます。
+
+    削除ボタンを押すことで警告の後削除ができます
+
+- **カテゴリの新規作成**
+<p align="center">
+  <img src="./public/images/admin5.png"  alt="カテゴリの新規作成">
+</p>
+
+    入力欄に新しいカテゴリ名を入れてカテゴリを作成をクリックすると新しいカテゴリが作成できます。
+    
+    下に表示されているカテゴリをクリックすることでクリックしたカテゴリの編集を行うことができます。
+
+- **カテゴリの編集**
+<p align="center">
+  <img src="./public/images/admin6.png"  alt="カテゴリの編集">
+</p>
+
+    カテゴリの名前を変更、削除することができます。
+
+    新規作成と同様にクリックしたカテゴリの編集を行うことができます。
+
+
+## 使用技術 (技術スタック)
+
+- **使用した言語やフレームワーク**
+    - **TypeScript**: コードの堅牢性を確保し、バグの少ない開発を行うために採用しました。
+    - **Next.js**: 高速なページ遷移と効率的なルーティングを実現するために使用しました。
+    - **Prisma**: データベース操作を型安全に行い、データ構造の管理を容易にするために導入しました。
+    - **CryptoJS**: 画像アップロード時のファイル名重複を防ぐため、MD5ハッシュ値の計算に使用しました。
+
+- **開発に使用したツールやウェブサービス**
+    - **VSCode**: 効率的なコーディングと拡張機能の活用のためメインエディタとして使用しました。
+    - **Supabase**: ユーザー認証、データベース管理、および画像ストレージとして全面的に活用しました。
+    - **Vercel**: アプリケーションのデプロイとホスティングに使用しました。
+
+- **システム構成図**
+<p align="center">
+  <img src="./public/images/system.png"  width=80% alt="システム構成図">
+</p>
+
+## 開発期間・体制
+
+- **開発体制**: 個人開発
+- **開発期間**: 2025.11.13 ~ 2026.03.03 (約70時間)
+
+## 工夫した点・苦労した点
+
+- **文単位のコメント実装とデータ構造**
+    - 文ごとにコメントを投稿できるよう、本文テキストを分解してコメントアンカーを動的に配置するロジックを工夫しました。また、一つの箇所に複数人のコメントが重なっても正しく表示されるよう実装しました。
+- **管理者と閲覧者の視覚的な差別化**
+    - 管理者のIDを判別し、コメントの背景色やラベルを動的に切り替えることで、記事作成者からの公式な回答が一目でわかるようにしました。
+- **自律的なエラー解決**
+    - 実装中に直面したエラーや不明点については、インターネットの調査やAIを効果的に活用して解決し、なるべく自力で機能実装しました。
+
+## 既知の課題と今後の展望
+
+- **マルチユーザー投稿機能**
+    - 現状は管理者のみが投稿・編集を行えますが、今後は一般ユーザーもアカウントを作成し、各自がブログを投稿・管理できる仕組みを作りたいと考えています。
+- **リアクション・コミュニティ機能**
+    - 読者が手軽に反応できる「いいね機能」や、安全なコミュニティ維持のための「BAN機能（迷惑ユーザー制限）」を実装予定です。

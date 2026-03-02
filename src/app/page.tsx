@@ -19,20 +19,20 @@ const Page: React.FC = () => {
         console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
         const { data, error } = await supabase
           .from("Post")
-          .select("id, title, content, createdAt, coverImageURL")
+          .select("id, title, content, createdAt, coverImageKey")
           .order("createdAt", { ascending: false });
         console.log("Supabase response:", { data, error });
         if (error) throw error;
 
         // Supabase のスキーマとフロントの Post 型に差分があるため整形する
-        const mapped = (data || []).map((row: { id: string; title: string; content: string | null; createdAt: string; coverImageURL: string | null }) => ({
+        const mapped = (data || []).map((row: { id: string; title: string; content: string | null; createdAt: string; coverImageKey: string | null }) => ({
           id: row.id,
           title: row.title,
           content: row.content || "",
           createdAt: row.createdAt,
           // 既存の型は coverImage オブジェクトを期待するため最低限の shape を生成
           coverImage: {
-            url: row.coverImageURL || "",
+            key: row.coverImageKey || "",
             width: 1365,
             height: 768,
           },

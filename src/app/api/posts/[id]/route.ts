@@ -7,6 +7,9 @@ type RouteParams = {
   }>;
 };
 
+export const revalidate = 0; // キャッシュ無効化
+export const dynamic = "force-dynamic";
+
 export const GET = async (req: NextRequest, params: RouteParams) => {
   try {
     // IDを取得
@@ -18,7 +21,7 @@ export const GET = async (req: NextRequest, params: RouteParams) => {
         id: true,
         title: true,
         content: true,
-        coverImageURL: true,
+        coverImageKey: true,
         createdAt: true,
         updatedAt: true,
         categories: {

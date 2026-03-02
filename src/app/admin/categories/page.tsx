@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 import Link from "next/link";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Category } from "@/app/_types/Category";
+import { useAuth } from "@/app/_hooks/useAuth";
+
 
 const Page: React.FC = () => {
     const [categories, setCategories] = useState<Category[] | null>(null);
@@ -13,10 +16,16 @@ const Page: React.FC = () => {
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+    const { token, isLoading: isAuthLoading } = useAuth();
     
     const { id } = useParams() as { id: string };
 
-
+    useEffect(() => {
+        if (!isAuthLoading && !token) {
+            window.alert("ログインが必要です");
+            router.push("/login");
+        }
+    }, [token, isAuthLoading, router]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -36,22 +45,26 @@ const Page: React.FC = () => {
         fetchCategories();
     }, []);
 
-    const handleDelete = async () => {
-        if (!window.confirm("本当にこのカテゴリを削除しますか？")) {
+    const handleDelete = async (id: string, name: string) => {
+        if (!window.confirm(`本当にカテゴリ「${name}」を削除しますか？`)) {
             return;
         }
+        if (!token) return;
         setIsSubmitting(true);
         // DELETEリクエストを送信
         try {
             const requestUrl = `/api/admin/categories/${id}`;
             const res = await fetch(requestUrl, {
                 method: "DELETE",
+                headers: { Authorization: token }, // トークンを付与
                 cache: "no-store",
             });
 
             if (!res.ok) {
                 throw new Error(`${res.status}: ${res.statusText}`); // -> catch節に移動
             }
+            setCategories((prev) => prev?.filter((c) => c.id !== id) || null);
+            window.alert(`カテゴリ「${name}」を削除しました。`);
             router.push("/admin/categories"); // カテゴリ一覧ページにリダイレクト
         } catch (error) {
             const errorMsg =
@@ -63,7 +76,7 @@ const Page: React.FC = () => {
         }
     }
 
-    if (isLoading) {
+    if (isLoading || isAuthLoading) {
         return (
             <div className="text-gray-500">
                 <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
@@ -71,6 +84,8 @@ const Page: React.FC = () => {
             </div>
         );
     }
+
+    if (!token) return null; // トークンがない場合は何も表示しない
 
     if (errorMsg) {
         return <div className="text-red-500">{errorMsg}</div>;
@@ -116,7 +131,7 @@ const Page: React.FC = () => {
                                         "rounded-md px-5 py-1 font-bold",
                                         "bg-red-500 text-white hover:bg-red-600"
                                     )}
-                                    onClick={handleDelete}
+                                    onClick={() => handleDelete(c.id, c.name)}
                                 >
                                     削除
                                 </button>
@@ -125,6 +140,19 @@ const Page: React.FC = () => {
                     ))}
                 </div>
             )}
+            <div className="space-y-2 pt-8 text-center">
+                <Link
+                    href="/admin"
+                    className={twMerge(
+                        "inline-flex items-center justify-center gap-2",
+                        "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+                        "transition-colors hover:bg-slate-200"
+                    )}
+                >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    管理一覧に戻る
+                </Link>
+            </div>
         </main>
     );
 };

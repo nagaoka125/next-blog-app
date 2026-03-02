@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 
+export const revalidate = 0; // キャッシュ無効化
+export const dynamic = "force-dynamic"; // 常に動的に処理
+
 // [GET] /api/categories カテゴリ一覧の取得
 export const GET = async (req: NextRequest) => {
   try {

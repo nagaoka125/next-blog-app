@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { twMerge } from "tailwind-merge";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faPen, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { supabase } from "@/utils/supabase";
@@ -11,7 +13,7 @@ type PostWithCategoryResponse = {
     id: string;
     title: string;
     createdAt: string;
-    coverImageURL?: string;
+    coverImageKey?: string;
     PostCategory: {
         Category: {
             id: string;
@@ -34,7 +36,7 @@ const AdminPostsPage: React.FC = () => {
                 setIsLoading(true);
                 const { data, error } = await supabase
                     .from("Post")
-                    .select("id, title, createdAt, coverImageURL, PostCategory(Category(id, name))")
+                    .select("id, title, createdAt, coverImageKey, PostCategory(Category(id, name))")
                     .order("createdAt", { ascending: false });
 
                 if (error) throw error;
@@ -44,7 +46,7 @@ const AdminPostsPage: React.FC = () => {
                     title: row.title,
                     content: "",
                     createdAt: row.createdAt,
-                    coverImage: { url: row.coverImageURL || "", width: 1365, height: 768 },
+                    coverImage: { key: row.coverImageKey || "", width: 1365, height: 768 },
                     categories: row.PostCategory
                         .filter((pc) => pc.Category && pc.Category.length > 0) 
                         .map((pc) => ({
@@ -139,6 +141,19 @@ const AdminPostsPage: React.FC = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+            <div className="space-y-2 pt-8 text-center">
+                <Link
+                    href="/admin"
+                    className={twMerge(
+                        "inline-flex items-center justify-center gap-2",
+                        "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+                        "transition-colors hover:bg-slate-200"
+                    )}
+                >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    管理一覧に戻る
+                </Link>
             </div>
         </main>
     );

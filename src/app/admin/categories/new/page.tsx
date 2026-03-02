@@ -1,10 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { Category } from "@/app/_types/Category";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/_hooks/useAuth";
 import Link from "next/link";
 
 // カテゴリをフェッチしたときのレスポンスのデータ型
@@ -25,6 +28,16 @@ const Page: React.FC = () => {
 
   // カテゴリ配列 (State)。取得中と取得失敗時は null、既存カテゴリが0個なら []
   const [categories, setCategories] = useState<Category[] | null>(null);
+
+  const router = useRouter();
+  const { token, isLoading: isAuthLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthLoading && !token) {
+      window.alert("ログインが必要です");
+      router.push("/login");
+    }
+  }, [token, isAuthLoading, router]);
 
   // ウェブAPI (/api/categories) からカテゴリの一覧をフェッチする関数の定義
   const fetchCategories = async () => {
@@ -90,6 +103,7 @@ const Page: React.FC = () => {
   // フォームのボタン (type="submit") がクリックされたときにコールされる関数
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // これを実行しないと意図せずページがリロードされるので注意
+    if (!token) return;
     setIsSubmitting(true);
 
     // ▼▼ 追加 ウェブAPI (/api/admin/categories) にPOSTリクエストを送信する処理
@@ -100,6 +114,7 @@ const Page: React.FC = () => {
         cache: "no-store",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token, // トークンを付与
         },
         body: JSON.stringify({ name: newCategoryName }),
       });
@@ -123,7 +138,7 @@ const Page: React.FC = () => {
   };
 
   // カテゴリをウェブAPIから取得中の画面
-  if (isLoading) {
+  if (isLoading || isAuthLoading) {
     return (
       <div className="text-gray-500">
         <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
@@ -131,6 +146,8 @@ const Page: React.FC = () => {
       </div>
     );
   }
+
+  if (!token) return null; // トークンがない場合は何も表示しない
 
   // カテゴリをウェブAPIから取得することに失敗したときの画面
   if (!categories) {
@@ -230,6 +247,19 @@ const Page: React.FC = () => {
           </div>
         </div>
       )}
+      <div className="space-y-2 pt-8 text-center">
+        <Link
+          href="/admin/categories"
+          className={twMerge(
+            "inline-flex items-center justify-center gap-2",
+            "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+            "transition-colors hover:bg-slate-200"
+          )}
+        >
+          <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+          カテゴリ一覧に戻る
+        </Link>
+      </div>
     </main>
   );
 };

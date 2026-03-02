@@ -8,7 +8,7 @@ const dummyPosts: Post[] = [
     content:
       "秋は夕暮れ。<br/>夕日のさして山の端いと近うなりたるに、烏の寝どころへ行くとて、三つ四つ、二つ三つなど、飛びいそぐさへあはれなり。まいて雁などのつらねたるが、いと小さく見ゆるはいとをかし。<br/>日入りはてて、風の音、虫の 音など、はたいふべきにあらず。",
     coverImage: {
-      url: "https://w1980.blob.core.windows.net/pg3/cover-img-red.jpg",
+      key: "private/cover-img-red.jpg",
       height: 768,
       width: 1365,
     },
@@ -30,7 +30,7 @@ const dummyPosts: Post[] = [
     content:
       "夏は夜。<br/>月のころはさらなり。<br/>やみもなほ、蛍の多く飛びちがひたる。また、 ただ一つ二つなど、ほのかにうち光りて行くもをかし。雨など降るもをかし。",
     coverImage: {
-      url: "https://w1980.blob.core.windows.net/pg3/cover-img-green.jpg",
+      key: "private/cover-img-green.jpg",
       height: 768,
       width: 1365,
     },
@@ -48,7 +48,7 @@ const dummyPosts: Post[] = [
     content:
       "春はあけぼの。<br/>やうやう白くなりゆく山ぎは、すこしあかりて、紫だちたる 雲のほそくたなびきたる。",
     coverImage: {
-      url: "https://w1980.blob.core.windows.net/pg3/cover-img-purple.jpg",
+      key: "private/cover-img-purple.jpg",
       height: 768,
       width: 1365,
     },

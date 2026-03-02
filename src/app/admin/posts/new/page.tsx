@@ -1,9 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
+import { useAuth } from "@/app/_hooks/useAuth";
+import { ChangeEvent } from "react";
+import { supabase } from "@/utils/supabase";
+import CryptoJS from "crypto-js";
 
 type CategoryApiResponse = {
     id: string;
@@ -19,6 +23,13 @@ type SelectCategory = {
     isSelect: boolean;
 };
 
+const calculateMD5Hash = async (file: File): Promise<string> => {
+    const buffer = await file.arrayBuffer();
+    const wordArray = CryptoJS.lib.WordArray.create(buffer);
+    return CryptoJS.MD5(wordArray).toString();
+
+}
+
 // 投稿を新規作成するページ
 const Page: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -26,12 +37,23 @@ const Page: React.FC = () => {
     const [fetchErrorMsg, setFetchErrorMsg] = useState<string | null>(null);
     const [newTitle, setNewTitle] = useState("");
     const [newContent, setNewContent] = useState("");
-    const [newCoverImageURL, setNewCoverImageURL] = useState("");
+    const [newCoverImageKey, setNewCoverImageKey] = useState("");
+    const { token, isLoading: isAuthLoading } = useAuth();
+    const bucketName = "cover-image";
+    const [coverImageKey, setCoverImageKey] = useState<string | undefined>();
 
     const router = useRouter();
 
     // カテゴリ配列 (State)。取得中と取得失敗時は null、既存カテゴリが0個なら []
     const [checkableCategories, setCheckableCategories] = useState<SelectCategory[] | null>(null);
+
+    useEffect(() => {
+        if (isAuthLoading) return; // 認証状態がまだわからない場合は何もしない
+        if (!token) {
+            window.alert("投稿するにはログインが必要です");
+            router.push("/login");
+        }
+    }, [token, isAuthLoading, router]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -96,9 +118,9 @@ const Page: React.FC = () => {
         setNewContent(e.target.value);
     };
 
-    const updateNewCoverImageURL = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // カバーイメージURLのバリデーション処理
-        setNewCoverImageURL(e.target.value);
+    const updateNewCoverImageKey = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // カバーイメージキーのバリデーション処理
+        setNewCoverImageKey(e.target.value);
     };
 
     // フォームの送信処理
@@ -109,11 +131,17 @@ const Page: React.FC = () => {
             const requestBody = {
                 title: newTitle,
                 content: newContent,
-                coverImageURL: newCoverImageURL,
+                coverImageKey: newCoverImageKey,
                 categoryIds: checkableCategories
                     ? checkableCategories.filter((c) => c.isSelect).map((c) => c.id)
                     : [],
             };
+
+            if (!token) {
+                window.alert("予期せぬ動作: トークンが取得できません");
+                return;
+            }
+
             const requestUrl = "/api/admin/posts";
             console.log(`${requestUrl} => ${JSON.stringify(requestBody, null, 2)}`);
             const res = await fetch(requestUrl, {
@@ -121,6 +149,7 @@ const Page: React.FC = () => {
                 cache: "no-store",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": token,
                 },
                 body: JSON.stringify(requestBody),
             });
@@ -143,7 +172,30 @@ const Page: React.FC = () => {
         }
     };
 
-    if (isLoading) {
+
+    // 画像アップロード
+    const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+    
+        const file = e.target.files[0];
+        setIsSubmitting(true); // アップロード中も送信中状態にする
+
+        try {
+            const fileHash = await calculateMD5Hash(file);
+            const path = `private/${fileHash}`;
+            const { data, error } = await supabase.storage
+                .from(bucketName)
+                .upload(path, file, { upsert: true });
+            if (error || !data) throw new Error(error.message);
+            setNewCoverImageKey(data.path); // キーをStateに保存
+        } catch (error) {
+            window.alert(`画像のアップロードに失敗しました: ${error}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isAuthLoading || isLoading) {
         return (
             <div className="text-gray-500">
                 <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
@@ -151,6 +203,8 @@ const Page: React.FC = () => {
             </div>
         );
     }
+
+    if (!token) return null; // ログインしていない場合は何も表示しない 
 
     if (!checkableCategories) {
         return <div className="text-red-500">{fetchErrorMsg}</div>;
@@ -208,19 +262,22 @@ const Page: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                    <label htmlFor="coverImageURL" className="block font-bold">
-                        カバーイメージ (URL)
+                    <label htmlFor="coverImageKey" className="block font-bold">
+                        カバーイメージ
                     </label>
                     <input
-                        type="url"
-                        id="coverImageURL"
-                        name="coverImageURL"
-                        className="w-full rounded-md border-2 px-2 py-1"
-                        value={newCoverImageURL}
-                        onChange={updateNewCoverImageURL}
-                        placeholder="カバーイメージのURLを記入してください"
+                        type="file"
+                        accept="image/*"
+                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                        onChange={handleImageChange}
+                        placeholder="カバーイメージを選択してください"
                         required
                     />
+                    {newCoverImageKey && (
+                        <div className="text-xs text-grey-500 break-all mt-1">
+                            アップロード画像のキー: {newCoverImageKey}
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-1">

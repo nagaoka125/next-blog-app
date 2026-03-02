@@ -9,8 +9,20 @@ export const useAuth = () => {
 
   useEffect(() => {
     // 初期セッションの取得
+    const FIRST_VISIT_KEY = "app_has_visited_v1";
     const initAuth = async () => {
       try {
+        // 初回訪問の場合はブラウザに残っているセッションを破棄して
+        // 初期状態をログアウトにする
+        if (typeof window !== "undefined" && !localStorage.getItem(FIRST_VISIT_KEY)) {
+          try {
+            await supabase.auth.signOut();
+          } catch (e) {
+            console.warn("初回訪問のサインアウトに失敗しました", e);
+          }
+          localStorage.setItem(FIRST_VISIT_KEY, "1");
+        }
+
         const {
           data: { session },
         } = await supabase.auth.getSession();

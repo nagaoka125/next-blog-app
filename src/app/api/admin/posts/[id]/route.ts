@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import type { Post } from "@/generated/prisma/client";
+import { supabase } from "@/utils/supabase";
 
 type RouteParams = {
     params: Promise<{
@@ -11,11 +12,24 @@ type RouteParams = {
 type RequestBody = {
     title: string;
     content: string;
-    coverImageURL: string;
+    coverImageKey: string;
     categoryIds: string[];
 };
 
+const authenticate = async (req: NextRequest) => {
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
+    return await supabase.auth.getUser(token);
+}
+
 export const DELETE = async (req: NextRequest, params: RouteParams) => {
+    const { data, error: authError } = await authenticate(req);
+    if (authError || !data.user) {
+        return NextResponse.json(
+            { error: "認証に失敗しました" },
+            { status: 401 }
+        );
+    }
+
     try {
         // idを取得
         const { id } = await params.params;
@@ -38,11 +52,19 @@ export const DELETE = async (req: NextRequest, params: RouteParams) => {
 };
 
 export const PUT = async (req: NextRequest, params: RouteParams) => {
+    const { data, error: authError } = await authenticate(req);
+    if (authError || !data.user) {
+        return NextResponse.json(
+            { error: "認証に失敗しました" },
+            { status: 401 }
+        );
+    }
+
     try {
         const { id } = await params.params;
         const request: RequestBody = await req.json();
 
-        const { title, content, coverImageURL, categoryIds } = request;
+        const { title, content, coverImageKey, categoryIds } = request;
 
         // categoryIdの検証
         const categories = await prisma.category.findMany({
@@ -68,7 +90,7 @@ export const PUT = async (req: NextRequest, params: RouteParams) => {
             data: {
                 title,
                 content,
-                coverImageURL,
+                coverImageKey,
             },
         });
         // 中間テーブルに新しく生成

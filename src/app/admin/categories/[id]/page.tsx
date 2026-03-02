@@ -6,6 +6,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { Category } from "@/app/_types/Category";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "@/app/_hooks/useAuth";
 import Link from "next/link";
 
 type CategoryApiResponse = {
@@ -23,6 +24,7 @@ const Page: React.FC = () => {
     const [newCategoryName, setNewCategoryName] = useState("");
     const [newCategoryNameError, setNewCategoryNameError] = useState("");
     const [currentCategory, setCurrentCategory] = useState<string | undefined>(undefined);
+    const { token, isLoading: isAuthLoading } = useAuth();
     
     // 動的ルートパラメータから id を取得
     const { id } = useParams() as { id: string };
@@ -30,6 +32,13 @@ const Page: React.FC = () => {
 
     // カテゴリ配列 (State)。取得中と取得失敗時は null、既存カテゴリが0個なら []
     const [categories, setCategories] = useState<Category[] | null>(null);
+
+    useEffect(() => {
+        if (!isAuthLoading && !token) {
+            window.alert("ログインが必要です");
+            router.push("/login");
+        }
+    }, [token, isAuthLoading, router]);
     
     // ウェブAPI (/api/categories) からカテゴリの一覧をフェッチする関数の定義
     const fetchCategories = async () => {
@@ -103,15 +112,17 @@ const Page: React.FC = () => {
         // 変更ボタンのクリック時にコールされる関数
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault(); // これを実行しないと意図せずページがリロードされるので注意
+        if (!token) return;
         setIsSubmitting(true);
         // PUTリクエストを送信
         try {
-            const requestUrl = "/api/admin/categories";
+            const requestUrl = `/api/admin/categories/${id}`;
             const res = await fetch(requestUrl, {
                 method: "PUT",
                 cache: "no-store",
                 headers: {
                     "Content-Type": "application/json",
+                    Authorization: token, // トークンを付与
                 },
                 body: JSON.stringify({ name: newCategoryName }),
             });
@@ -135,7 +146,7 @@ const Page: React.FC = () => {
 　
     // 削除ボタンをクリックしたときにコールされる関数
     const handleDelete = async () => {
-        if (!window.confirm("本当にこのカテゴリを削除しますか？")) {
+        if (!window.confirm("本当にこのカテゴリを削除しますか？") || !token) {
             return;
         }
         setIsSubmitting(true);
@@ -145,6 +156,7 @@ const Page: React.FC = () => {
             const res = await fetch(requestUrl, {
                 method: "DELETE",
                 cache: "no-store",
+                headers: { Authorization: token }, // トークンを付与
             });
 
             if (!res.ok) {
@@ -163,7 +175,7 @@ const Page: React.FC = () => {
 
     
     // カテゴリをウェブAPIから取得中の画面
-    if (isLoading) {
+    if (isLoading || isAuthLoading) {
         return (
             <div className="text-gray-500">
             <FontAwesomeIcon icon={faSpinner} className="mr-1 animate-spin" />
@@ -171,6 +183,8 @@ const Page: React.FC = () => {
             </div>
         );
     }
+
+    if (!token) return null; // トークンがない場合は何も表示しない
     
     // カテゴリをウェブAPIから取得することに失敗したときの画面
     if (!categories) {

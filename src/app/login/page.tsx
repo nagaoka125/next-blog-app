@@ -6,6 +6,8 @@ import { twMerge } from "tailwind-merge";
 import ValidationAlert from "../_components/ValidationAlert";
 import { supabase } from "@/utils/supabase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 
 const Page: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,6 +116,19 @@ const Page: React.FC = () => {
           >
             ログイン
           </button>
+        </div>
+        <div className="pt-8 text-center">
+          <Link
+            href="/"
+            className={twMerge(
+              "inline-flex items-center justify-center gap-2",
+              "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+              "transition-colors hover:bg-slate-200"
+            )}
+          >
+            <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+            投稿一覧に戻る
+          </Link>
         </div>
       </form>
     </main>

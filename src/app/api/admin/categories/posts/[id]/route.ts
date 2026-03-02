@@ -35,7 +35,7 @@ export const DELETE = async (req: NextRequest, routeParams: RouteParams) => {
 export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
   try {
     const { id } = await routeParams.params;
-    const { title, content, coverImageURL, categoryIds } = await req.json();
+    const { title, content, coverImageKey, categoryIds } = await req.json();
 
     // categoryIdの検証
     const categoriesCount = await prisma.category.count({
@@ -59,7 +59,7 @@ export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
       data: {
         title,
         content,
-        coverImageURL,
+        coverImageKey,
         // 中間テーブルへの新しい紐付け情報を生成
         categories: {
           create: categoryIds.map((categoryId: string) => ({
@@ -74,7 +74,7 @@ export const PUT = async (req: NextRequest, routeParams: RouteParams) => {
       id: updatedPost.id,
       title: updatedPost.title,
       content: updatedPost.content,
-      coverImageURL: updatedPost.coverImageURL,
+      coverImageKey: updatedPost.coverImageKey,
       createdAt: updatedPost.createdAt,
       updatedAt: updatedPost.updatedAt,
     });

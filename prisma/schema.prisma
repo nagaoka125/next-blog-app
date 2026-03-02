@@ -19,10 +19,11 @@ model Post {
   id             String @id @default(uuid())
   title          String
   content        String
-  coverImageURL  String
+  coverImageKey  String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   categories     PostCategory[]
+  comments       Comment[]
 }
 
 // カテゴリテーブル
@@ -43,4 +44,18 @@ model PostCategory {
   updatedAt   DateTime @updatedAt
   category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// 投稿に紐づくコメント
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  position  Int?     // inline コメント時のみ設定（null = グローバルコメント）
+  text      String
+  type      String   @default("inline")  // "inline" または "global"
+  userId    String?  // コメント作成者のID（管理者識別用）
+  createdAt DateTime @default(now())
+  isAdmin   Boolean  @default(false)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 }

@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse, NextRequest } from "next/server";
 import { Post } from "@/generated/prisma/client";
+import { useAuth } from "@/app/_hooks/useAuth";
+
+export const revalidate = 0; // キャッシュ無効化
+export const dynamic = "force-dynamic";
 
 export const GET = async (req: NextRequest) => {
   try {

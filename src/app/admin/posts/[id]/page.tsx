@@ -289,7 +289,7 @@ const AdminEditPostPage: React.FC = () => {
                         <input
                             type="file"
                             accept="image/*"
-                            className="mb-2 block w-full text-sm"
+                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                             onChange={handleImageChange}
                             placeholder="カバー画像を選択してください"
                             required

@@ -7,6 +7,8 @@ import { twMerge } from "tailwind-merge";
 import { useAuth } from "@/app/_hooks/useAuth";
 import { ChangeEvent } from "react";
 import { supabase } from "@/utils/supabase";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 import CryptoJS from "crypto-js";
 
 type CategoryApiResponse = {
@@ -316,6 +318,19 @@ const Page: React.FC = () => {
                     </button>
                 </div>
             </form>
+            <div className="space-y-2 pt-8 text-center">
+                <Link
+                    href="/admin/posts"
+                    className={twMerge(
+                        "inline-flex items-center justify-center gap-2",
+                        "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+                        "transition-colors hover:bg-slate-200"
+                    )}
+                >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    投稿一覧に戻る
+                </Link>
+            </div>
         </main>
     );
 };

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
 import { Category } from "@/app/_types/Category";
 import { faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
@@ -306,6 +307,19 @@ const Page: React.FC = () => {
                     </div>
                 </div>
             )}
+            <div className="space-y-2 pt-8 text-center">
+                <Link
+                    href="/admin/categories"
+                    className={twMerge(
+                        "inline-flex items-center justify-center gap-2",
+                        "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+                        "transition-colors hover:bg-slate-200"
+                    )}
+                >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    カテゴリ一覧に戻る
+                </Link>
+            </div>
         </main>
     );
 };

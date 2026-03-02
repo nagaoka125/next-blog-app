@@ -6,6 +6,8 @@ import { supabase } from "@/utils/supabase";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link";
 import type { Post } from "@/app/_types/Post";
 import CryptoJS from "crypto-js";
 
@@ -371,6 +373,19 @@ const AdminEditPostPage: React.FC = () => {
                     <button type="button" onClick={handleDelete} className="rounded bg-red-500 px-3 py-1 text-white" disabled={isSubmitting}>削除</button>
                 </div>
             </form>
+            <div className="space-y-2 pt-8 text-center">
+                <Link
+                    href="/admin/posts"
+                    className={twMerge(
+                        "inline-flex items-center justify-center gap-2",
+                        "rounded-full bg-slate-100 px-6 py-2 font-bold text-slate-600",
+                        "transition-colors hover:bg-slate-200"
+                    )}
+                >
+                    <FontAwesomeIcon icon={faChevronLeft} className="text-xs" />
+                    投稿一覧に戻る
+                </Link>
+            </div>
         </main>
     );
 };

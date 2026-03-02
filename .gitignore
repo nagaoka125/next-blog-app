@@ -43,3 +43,5 @@ next-env.d.ts
 /devtool/httpYac/*.http
 
 /src/generated/prisma
+
+.crossnote
